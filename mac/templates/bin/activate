@@ -31,7 +31,6 @@ deactivate () {
     fi
 
     unset ENV_PATH
-    unset MOZMILL_ROOT
 
     if [ ! "$1" = "nondestructive" ] ; then
         # Self destruct!
@@ -39,12 +38,6 @@ deactivate () {
     fi
 }
 
-
-# Ensure that we source only once into the environment to avoid the cluttering
-# of environment variables
-if [ -n "${MOZMILL_ROOT:+1}" ]; then
-    return
-fi
 
 # unset irrelavent variables
 deactivate nondestructive
@@ -59,13 +52,11 @@ _OLD_PS1="$PS1"
 
 # Build necessary paths
 if [ "x$OSTYPE" = "xmsys" ] ; then
-    MOZMILL_ROOT="`pwd -W | sed s,/,\\\\\\\\,g`"
     PATH="`pwd`/bin:$PATH"
     # msys will convert any env vars with PATH in it to use msys
     # form and will unconvert before launching
     PYTHONPATH="`pwd -W`/python-lib;$PYTHONPATH"
 else
-    MOZMILL_ROOT="$ENV_PATH"
     PYTHONPATH="$ENV_PATH/python-lib:$PYTHONPATH"
     PATH="$ENV_PATH/bin:$PATH"
 fi
@@ -80,7 +71,6 @@ else
 fi
 
 # Export new values of environment variables
-export MOZMILL_ROOT
 export PYTHONPATH
 export PATH
 export PS1

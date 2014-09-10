@@ -4,17 +4,17 @@
 URL_VIRTUALENV=https://codeload.github.com/pypa/virtualenv/zip/
 
 VERSION_PYTHON=$(python -c "import sys;print sys.version[:3]")
-VERSION_MOZMILL_AUTOMATION=$1
 
 VERSION_MERCURIAL=2.6.2
-VERSION_MOZDOWNLOAD=1.9
+VERSION_MOZINSTALL=1.10
+VERSION_FXA_PYTHON_CLIENT=1.2.0
 VERSION_VIRTUALENV=1.10.1
 
 DIR_BASE=$(cd $(dirname ${BASH_SOURCE}); pwd)
-DIR_ENV=${DIR_BASE}/mozmill-env
+DIR_ENV=${DIR_BASE}/tps-env
 DIR_TMP=${DIR_BASE}/tmp
 
-TARGET_ARCHIVE=$(dirname $(pwd))/$VERSION_MOZMILL_AUTOMATION-$(basename $(pwd)).zip
+TARGET_ARCHIVE=$(dirname $(pwd))/TPS_env-$(basename $(pwd)).zip
 
 
 cleanup () {
@@ -22,11 +22,6 @@ cleanup () {
     rm -r $DIR_ENV
     rm -r $DIR_TMP
 }
-
-if [ ! -n "$1" ] ; then
-  echo Version of Mozmill-Automation to be installed is required as first parameter.
-  exit 1
-fi
 
 echo "Fetching virtualenv ${VERSION_VIRTUALENV} and creating virtual environment"
 mkdir ${DIR_TMP}
@@ -45,8 +40,11 @@ fi
 echo "Pre-installing mercurial $VERSION_MERCURIAL in pure mode"
 pip install --upgrade --global-option="--pure" mercurial==$VERSION_MERCURIAL
 
-echo "Installing mozmill-automation $VERSION_MOZMILL_AUTOMATION and related packages"
-pip install --upgrade mozmill_automation==$VERSION_MOZMILL_AUTOMATION
+echo "Installing mozinstall $VERSION_MOZINSTALL and related packages"
+pip install --upgrade mozinstall==$VERSION_MOZINSTALL
+
+echo "Installing fxa-python-client $VERSION_FXA_PYTHON_CLIENT and related packages"
+pip install --upgrade fxa-python-client==$VERSION_FXA_PYTHON_CLIENT
 
 echo "Deactivating the environment"
 deactivate
@@ -67,7 +65,6 @@ sed -i '' 's/#!.*/#!\/usr\/bin\/env python/g' $DIR_ENV/bin/*
 echo "Deleting pre-compiled Python modules"
 find $DIR_ENV/ -name '*.pyc' -exec rm {} \;
 find $DIR_ENV/ -name '*.pyo' -exec rm {} \;
-find $DIR_ENV/ -name '*.so' -exec rm {} \;
 
 echo "Building zip archive of environment"
 zip -FSr $TARGET_ARCHIVE $(basename $DIR_ENV)

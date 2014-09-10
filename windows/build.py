@@ -16,13 +16,14 @@ import zipfile
 # Link to the folder which contains the zip archives of virtualenv
 URL_VIRTUALENV = 'https://codeload.github.com/pypa/virtualenv/zip/'
 
-VERSION_MERCURIAL = '2.6.2'
-VERSION_MOZDOWNLOAD = '1.9'
-VERSION_VIRTUALENV = '1.10.1'
+VERSION_MERCURIAL='2.6.2'
+VERSION_MOZINSTALL='1.10'
+VERSION_FXA_PYTHON_CLIENT='1.2.0'
+VERSION_VIRTUALENV='1.10.1'
 
 dir_base = os.path.abspath(os.path.dirname(__file__))
 dir_assets = os.path.join(dir_base, os.path.pardir, 'assets')
-dir_env = os.path.join(dir_base, 'mozmill-env')
+dir_env = os.path.join(dir_base, 'tps-env')
 dir_msys = os.path.join(dir_env, 'msys')
 dir_python = os.path.join(dir_env, 'python')
 dir_tmp=os.path.join(dir_base, 'tmp')
@@ -116,16 +117,9 @@ def make_relocatable(filepath):
 def main():
     logging.basicConfig(level=logging.INFO)
 
-    parser = optparse.OptionParser()
-    (options, args) = parser.parse_args()
-
     if not ctypes.windll.shell32.IsUserAnAdmin():
         logging.error('Sorry, this script requires administrative privileges.')
         sys.exit(126)
-
-    if not args:
-        parser.error('Version of Mozmill-Automation to be installed is required as first parameter.')
-    mozmill_automation_version = args[0]
 
     logging.info('Deleting all possible existent folders')
     shutil.rmtree(dir_env, True)
@@ -192,10 +186,16 @@ def main():
                            '--upgrade', "--global-option='--pure'",
                            'mercurial==%s' % VERSION_MERCURIAL])
 
-    logging.info('Installing mozmill-automation %s and related packages' % mozmill_automation_version)
+    logging.info('Installing fxa-python-client %s and related packages' %
+                 VERSION_FXA_PYTHON_CLIENT)
     subprocess.check_call([run_cmd_path, 'pip', 'install',
-                           '--upgrade', 'mozmill-automation==%s' %
-                               mozmill_automation_version])
+                           '--upgrade', 'fxa-python-client==%s' %
+                           VERSION_FXA_PYTHON_CLIENT])
+
+    logging.info('Installing mozinstall %s and related packages' % VERSION_MOZINSTALL)
+    subprocess.check_call([run_cmd_path, 'pip', 'install',
+                           '--upgrade', 'mozinstall==%s' %
+                               VERSION_MOZINSTALL])
 
     make_relocatable(os.path.join(python_scripts_dir, '*.py'))
     make_relocatable(os.path.join(python_scripts_dir, 'hg'))
@@ -212,7 +212,7 @@ def main():
     shutil.rmtree(os.path.join(dir_msys, 'home'))
 
     logging.info('Building zip archive of environment')
-    target_archive = os.path.join(os.path.dirname(dir_base), '%s-windows' % mozmill_automation_version)
+    target_archive = os.path.join(os.path.dirname(dir_base), '-windows')
     shutil.make_archive(target_archive, 'zip', dir_base, os.path.basename(dir_env))
 
     shutil.rmtree(dir_env, True)
